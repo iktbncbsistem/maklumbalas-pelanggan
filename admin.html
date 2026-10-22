@@ -68,7 +68,38 @@
         </table>
     </div> <!-- Ini tag penutup untuk <div class="dashboard-container"> -->
 
+        <!-- --- PENGURUSAN PENGAJAR --- -->
+        <hr style="margin-top: 40px; border: 2px solid #28a745;">
+        <h3 style="color: #28a745;">Pengurusan Senarai Pengajar</h3>
         
+        <div class="cadangan-box" style="border-left: 4px solid #28a745;">
+            <form id="formTambahPengajar">
+                <div style="margin-bottom: 10px;">
+                    <label>Bahagian / Jabatan:</label>
+                    <select id="jabatanPengajarBaru" required style="width: 100%; padding: 8px;">
+                        <option value="">Memuatkan data...</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label>Nama Pengajar:</label>
+                    <input type="text" id="namaPengajarBaru" required placeholder="Contoh: En. Ahmad bin Abu" style="width: 100%; padding: 8px;">
+                </div>
+                <button type="submit" style="background-color: #28a745; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 4px;">Tambah Pengajar</button>
+            </form>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 40px;">
+            <thead>
+                <tr style="background-color: #28a745; color: white; text-align: left;">
+                    <th style="padding: 10px; border: 1px solid #ddd;">Bahagian / Jabatan</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Nama Pengajar</th>
+                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Tindakan</th>
+                </tr>
+            </thead>
+            <tbody id="senaraiPengajarBody">
+                <tr><td colspan="3" style="padding: 10px; text-align: center;">Memuatkan data...</td></tr>
+            </tbody>
+        </table>
     </div>
 
     <!-- Skrip Supabase & Logik Admin -->
