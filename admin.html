@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Maklumbalas</title>
+    <link rel="stylesheet" href="style.css"> <!-- Guna style sedia ada -->
+    <!-- CDN untuk Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .dashboard-container { max-width: 800px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .chart-container { position: relative; height: 400px; width: 100%; margin-top: 20px; }
+        .cadangan-box { background: #f9f9f9; border-left: 4px solid #007bff; padding: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h2>Papan Pemuka Analisa Maklumbalas</h2>
+        
+        <h3>Analisa Skor Pengajaran (Soalan T1)</h3>
+        <div class="chart-container">
+            <!-- Tempat Graf akan dipaparkan -->
+            <canvas id="skorChart"></canvas>
+        </div>
+
+        <hr>
+
+        <h3>Senarai Cadangan Penambahbaikan</h3>
+        <div id="senaraiCadangan">
+            <p>Memuatkan data cadangan...</p>
+        </div>
+    </div>
+
+    <!-- Skrip Supabase & Logik Admin -->
+    <script type="module" src="admin.js"></script>
+</body>
+</html>
