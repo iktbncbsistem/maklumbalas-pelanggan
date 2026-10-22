@@ -108,3 +108,61 @@ if (formTambah) {
         }
     });
 }
+// --- FUNGSI UNTUK PAPAR & PADAM SOALAN ---
+async function paparSenaraiSoalan() {
+    const tbody = document.getElementById('senaraiSoalanBody');
+    if (!tbody) return;
+
+    // Tarik data dari database
+    const { data, error } = await supabase
+        .from('senarai_soalan')
+        .select('*')
+        .order('kategori')
+        .order('kod_soalan');
+
+    if (error) {
+        console.error("Ralat ambil soalan:", error);
+        tbody.innerHTML = '<tr><td colspan="4" style="padding:10px; text-align:center;">Gagal memuatkan data.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = ''; // Kosongkan loading teks
+
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="padding:10px; text-align:center;">Tiada soalan direkodkan.</td></tr>';
+        return;
+    }
+
+    // Bina baris jadual untuk setiap soalan
+    data.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="padding: 8px; border: 1px solid #ddd;">${item.kategori}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${item.kod_soalan}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${item.soalan}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
+                <button class="btn-padam" data-id="${item.id}" style="background: #dc3545; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">Padam</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // Tambah fungsi "Click" pada setiap butang Padam
+    document.querySelectorAll('.btn-padam').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const id = e.target.getAttribute('data-id');
+            if (confirm("Adakah anda pasti mahu memadam soalan ini?")) {
+                const { error: delErr } = await supabase.from('senarai_soalan').delete().eq('id', id);
+                if (delErr) {
+                    alert("Ralat memadam soalan.");
+                } else {
+                    alert("Soalan berjaya dipadam!");
+                    paparSenaraiSoalan(); // Refresh jadual secara automatik
+                }
+            }
+        });
+    });
+}
+
+// Panggil fungsi ini supaya jadual dimuatkan terus bila admin buka page
+paparSenaraiSoalan();
