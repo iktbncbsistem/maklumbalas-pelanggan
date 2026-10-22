@@ -224,3 +224,103 @@ async function paparSenaraiSoalan() {
 
 // Panggil fungsi ini supaya jadual dimuatkan terus bila admin buka page
 paparSenaraiSoalan();
+// ==========================================
+// --- FUNGSI PENGURUSAN PENGAJAR (BARU) ---
+// ==========================================
+
+// 1. Tarik senarai Jabatan untuk Dropdown
+async function muatDropdownJabatanAdmin() {
+    const selectJabatan = document.getElementById('jabatanPengajarBaru');
+    if (!selectJabatan) return;
+
+    const { data, error } = await supabase.from('jabatan').select('*').order('nama');
+    if (error) {
+        console.error("Ralat muat jabatan:", error);
+        return;
+    }
+
+    selectJabatan.innerHTML = '<option value="">-- Sila Pilih Bahagian/Jabatan --</option>';
+    data.forEach(j => {
+        selectJabatan.innerHTML += `<option value="${j.id}">${j.nama}</option>`;
+    });
+}
+
+// 2. Papar Senarai Pengajar dalam Jadual
+async function paparSenaraiPengajar() {
+    const tbody = document.getElementById('senaraiPengajarBody');
+    if (!tbody) return;
+
+    // Tarik data Jabatan & Pengajar sekaligus supaya kita boleh padankan ID
+    const { data: dataJabatan } = await supabase.from('jabatan').select('*');
+    const { data: dataPengajar, error } = await supabase.from('pengajar').select('*').order('jabatan_id');
+
+    if (error) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Gagal memuatkan data.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = '';
+    if (dataPengajar.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Tiada rekod pengajar.</td></tr>';
+        return;
+    }
+
+    dataPengajar.forEach(pengajar => {
+        // Cari nama jabatan berdasarkan ID
+        const jabatan = dataJabatan.find(j => j.id === pengajar.jabatan_id);
+        const namaJabatan = jabatan ? jabatan.nama : 'Tiada Jabatan';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="padding: 8px; border: 1px solid #ddd;">${namaJabatan}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${pengajar.nama}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
+                <button class="btn-padam-pengajar" data-id="${pengajar.id}" style="background: #dc3545; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;" title="Padam Pengajar">🗑️</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // Fungsi klik Padam Pengajar
+    document.querySelectorAll('.btn-padam-pengajar').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            if (confirm("Padam nama pengajar ini?")) {
+                const { error: delErr } = await supabase.from('pengajar').delete().eq('id', id);
+                if (delErr) alert("Ralat memadam pengajar.");
+                else {
+                    alert("Pengajar berjaya dipadam!");
+                    paparSenaraiPengajar();
+                }
+            }
+        });
+    });
+}
+
+// 3. Logik Tambah Pengajar Baharu
+const formPengajar = document.getElementById('formTambahPengajar');
+if (formPengajar) {
+    formPengajar.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const jabatanId = document.getElementById('jabatanPengajarBaru').value;
+        const nama = document.getElementById('namaPengajarBaru').value;
+
+        const { error } = await supabase.from('pengajar').insert([{ 
+            jabatan_id: jabatanId, 
+            nama: nama 
+        }]);
+
+        if (error) {
+            alert("Ralat menambah pengajar!");
+            console.error(error);
+        } else {
+            alert("Pengajar berjaya ditambah!");
+            formPengajar.reset();
+            paparSenaraiPengajar();
+        }
+    });
+}
+
+// Panggil fungsi secara automatik bila page dibuka
+muatDropdownJabatanAdmin();
+paparSenaraiPengajar();
