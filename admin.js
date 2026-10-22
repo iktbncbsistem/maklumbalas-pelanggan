@@ -1,7 +1,14 @@
 // --- PASTIKAN BOS IMPORT SUPABASE DI SINI SEPERTI BIASA ---
 // import { supabase } from './supabase.js'; (Atau mengikut cara setup bos)
 
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+const supabaseUrl = 'MASUKKAN_URL_SUPABASE_BOS_DI_SINI'
+const supabaseKey = 'MASUKKAN_API_KEY_BOS_DI_SINI'
+const supabase = createClient(supabaseUrl, supabaseKey)
 
+// ==========================================
+// 1. FUNGSI TUKAR TAB & TARIKH (UNTUK UI)
+// ==========================================
 // ==========================================
 // 1. FUNGSI TUKAR TAB & TARIKH (UNTUK UI)
 // ==========================================
