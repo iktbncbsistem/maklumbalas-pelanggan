@@ -28,12 +28,14 @@ loadJabatan();
 
 const soalanContainer = document.getElementById('dynamic-soalan-container');
 
+// --- CARI BAHAGIAN INI DALAM app.js ---
 async function loadSoalan() {
     const { data, error } = await supabase
         .from('senarai_soalan')
         .select('*')
         .eq('status_aktif', true)
-        .order('kategori'); // Susun ikut kategori
+        .order('kategori') // Susunan pertama: Ikut Kategori
+        .order('kod_soalan'); // <--- TAMBAH BARIS INI: Susunan kedua: Ikut Kod Soalan (A1, A2, F1, F2 dll)
 
     if (error) {
         console.error("Ralat ambil soalan:", error);
