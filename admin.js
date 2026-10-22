@@ -277,3 +277,73 @@ async function muatEnjinDashboard() {
 
 // Panggil enjin untuk hidupkan data bila page dibuka!
 muatEnjinDashboard();
+
+// ==========================================
+// 5. FUNGSI PENGURUSAN JABATAN / BAHAGIAN
+// ==========================================
+async function paparSenaraiJabatan() {
+    const tbody = document.getElementById('senaraiJabatanBody');
+    if (!tbody) return;
+
+    const { data, error } = await supabase.from('jabatan').select('*').order('nama');
+
+    if (error) {
+        tbody.innerHTML = '<tr><td colspan="2" class="empty-state">Gagal memuatkan data.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = '';
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="2" class="empty-state">Tiada rekod bahagian/jabatan.</td></tr>';
+        return;
+    }
+
+    data.forEach(jabatan => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${jabatan.nama}</strong></td>
+            <td style="text-align: left; width: 100px;">
+                <button class="action-btn delete btn-padam-jabatan" data-id="${jabatan.id}" style="background: #dc3545; color: white;" title="Padam">🗑️</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // Fungsi Padam Jabatan
+    document.querySelectorAll('.btn-padam-jabatan').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            if (confirm("Padam bahagian ini?\n(Pastikan tiada pengajar didaftarkan di bawah bahagian ini sebelum memadam)")) {
+                const { error: delErr } = await supabase.from('jabatan').delete().eq('id', id);
+                if (delErr) {
+                    alert("Ralat memadam! Kemungkinan besar masih ada pengajar di bawah bahagian ini. Sila padam pengajar tersebut dahulu.");
+                } else {
+                    paparSenaraiJabatan();
+                    muatDropdownJabatanAdmin(); // Update dropdown di borang pengajar
+                }
+            }
+        });
+    });
+}
+
+// Fungsi Tambah Jabatan Baru
+const formJabatan = document.getElementById('formTambahJabatan');
+if (formJabatan) {
+    formJabatan.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nama = document.getElementById('namaJabatanBaru').value;
+
+        const { error } = await supabase.from('jabatan').insert([{ nama }]);
+        if (!error) {
+            alert("Bahagian/Jabatan berjaya ditambah!");
+            formJabatan.reset();
+            paparSenaraiJabatan();
+            muatDropdownJabatanAdmin(); // Update dropdown di borang pengajar secara automatik
+        } else {
+            alert("Ralat menambah bahagian/jabatan!");
+        }
+    });
+}
+
+// Panggil fungsi secara automatik bila page dimuatkan
+paparSenaraiJabatan();
