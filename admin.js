@@ -2,8 +2,8 @@
 // import { supabase } from './supabase.js'; (Atau mengikut cara setup bos)
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-const supabaseUrl = 'MASUKKAN_URL_SUPABASE_BOS_DI_SINI'
-const supabaseKey = 'MASUKKAN_API_KEY_BOS_DI_SINI'
+const supabaseUrl = 'https://hohsvbbbtuwvcrmbfgjm.supabase.co';
+const supabaseKey = 'sb_publishable_yDdaql6HnLx4akA6jyIWBA_V7Vs7nZU';
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 // ==========================================
