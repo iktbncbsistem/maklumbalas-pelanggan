@@ -84,3 +84,27 @@ async function loadDashboardData() {
 
 // Jalankan fungsi bila halaman dibuka
 loadDashboardData();
+
+
+// Fungsi untuk tambah soalan baharu dari Admin
+const formTambah = document.getElementById('formTambahSoalan');
+if (formTambah) {
+    formTambah.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const kategori = document.getElementById('kategoriBaru').value;
+        const kod = document.getElementById('kodBaru').value;
+        const soalan = document.getElementById('soalanBaru').value;
+
+        const { error } = await supabase
+            .from('senarai_soalan')
+            .insert([{ kategori: kategori, kod_soalan: kod, soalan: soalan }]);
+
+        if (error) {
+            alert("Ralat menambah soalan!");
+            console.error(error);
+        } else {
+            alert("Soalan berjaya ditambah!");
+            formTambah.reset(); // Kosongkan borang
+        }
+    });
+}
