@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borang Maklumbalas IKTBN Chembong</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Maklumbalas Kepuasan Pelanggan</h2>
+        <p>Sila isi maklumat di bawah. Nombor tiket akan dihantar ke e-mel anda.</p>
+
+        <form id="feedbackForm">
+            <!-- Maklumat Pelajar -->
+            <div class="form-group">
+                <label for="email">E-mel Pelajar:</label>
+                <input type="email" id="email" required placeholder="Masukkan e-mel anda">
+            </div>
+
+            <!-- Pilihan Jabatan & Pengajar -->
+            <div class="form-group">
+                <label for="jabatan">Bahagian / Bengkel:</label>
+                <select id="jabatan" required>
+                    <option value="">Sila Pilih...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="pengajar">Nama Pengajar:</label>
+                <select id="pengajar" required disabled>
+                    <option value="">Silih Pilih Jabatan Dahulu...</option>
+                </select>
+            </div>
+
+            <hr>
+
+            <!-- Bahagian Penilaian -->
+            <h3>Penilaian Pengajaran (Skala 1 Lemah - 5 Cemerlang)</h3>
+            <div class="form-group">
+                <label>T1: Pengajar bertugas menepati masa dan mematuhi jadual latihan</label>
+                <select id="T1" required>
+                    <option value="">Pilih Skala</option>
+                    <option value="1">1 - Lemah</option>
+                    <option value="2">2 - Sederhana</option>
+                    <option value="3">3 - Memuaskan</option>
+                    <option value="4">4 - Baik</option>
+                    <option value="5">5 - Cemerlang</option>
+                </select>
+            </div>
+
+            <!-- Ruangan Cadangan -->
+            <hr>
+            <div class="form-group">
+                <label for="cadangan">Cadangan Penambahbaikan:</label>
+                <textarea id="cadangan" rows="4" placeholder="Tulis cadangan anda di sini..." required></textarea>
+            </div>
+
+            <button type="submit" id="submitBtn">Hantar Maklumbalas</button>
+        </form>
+
+        <div id="successMessage" class="hidden">
+            <h3>Terima Kasih!</h3>
+            <p>Maklumbalas anda telah direkodkan. Nombor Tiket anda: <strong id="ticketNo"></strong></p>
+        </div>
+    </div>
+
+    <!-- Skrip Supabase & Logik Aplikasi -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
