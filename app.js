@@ -26,6 +26,52 @@ async function loadJabatan() {
 }
 loadJabatan();
 
+const soalanContainer = document.getElementById('dynamic-soalan-container');
+
+async function loadSoalan() {
+    const { data, error } = await supabase
+        .from('senarai_soalan')
+        .select('*')
+        .eq('status_aktif', true)
+        .order('kategori'); // Susun ikut kategori
+
+    if (error) {
+        console.error("Ralat ambil soalan:", error);
+        return;
+    }
+
+    let htmlKandungan = '';
+    let kategoriSemasa = '';
+
+    data.forEach(item => {
+        // Buat tajuk kategori jika ia kategori baharu
+        if (item.kategori !== kategoriSemasa) {
+            htmlKandungan += `<h3>Bahagian: ${item.kategori}</h3>`;
+            kategoriSemasa = item.kategori;
+        }
+
+        // Bina kotak soalan (dropdown skala 1-5)
+        htmlKandungan += `
+            <div class="form-group">
+                <label>${item.kod_soalan}: ${item.soalan}</label>
+                <select class="skor-input" data-kod="${item.kod_soalan}" data-kategori="${item.kategori}" data-soalan="${item.soalan}" required>
+                    <option value="">Pilih Skala...</option>
+                    <option value="1">1 - Lemah</option>
+                    <option value="2">2 - Sederhana</option>
+                    <option value="3">3 - Memuaskan</option>
+                    <option value="4">4 - Baik</option>
+                    <option value="5">5 - Cemerlang</option>
+                </select>
+            </div>
+        `;
+    });
+
+    soalanContainer.innerHTML = htmlKandungan;
+}
+
+// Panggil fungsi ini supaya soalan dimuatkan bila page dibuka
+loadSoalan();
+
 // 2. Kemaskini senarai Pengajar apabila Jabatan dipilih
 jabatanSelect.addEventListener('change', async (e) => {
     const jabatanId = e.target.value;
