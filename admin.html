@@ -1,108 +1,194 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ms">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin - Maklumbalas</title>
-    <link rel="stylesheet" href="style.css"> <!-- Guna style sedia ada -->
-    <!-- CDN untuk Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .dashboard-container { max-width: 800px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .chart-container { position: relative; height: 400px; width: 100%; margin-top: 20px; }
-        .cadangan-box { background: #f9f9f9; border-left: 4px solid #007bff; padding: 10px; margin-bottom: 10px; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#102b59">
+<title>Papan Pemuka Pentadbir — Sistem Maklumbalas</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --navy:#102b59;--navy2:#173d78;--blue:#1677f2;--blue-soft:#eaf3ff;
+  --green:#079669;--green-soft:#e8faf2;--purple:#7c3aed;--orange:#f97316;
+  --ink:#142344;--muted:#667796;--line:#e3eaf4;--surface:#fff;--bg:#f3f7fc;
+  --shadow:0 8px 26px rgba(24,53,96,.07);--radius:17px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,"Segoe UI",Arial,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.topbar{background:linear-gradient(115deg,#102653,#1b3f79);color:#fff;padding:16px clamp(16px,3vw,36px);display:flex;align-items:center;justify-content:space-between;gap:24px;box-shadow:0 5px 20px #122d5522}
+.brand{display:flex;align-items:center;gap:12px;min-width:230px}
+.brand-mark{width:48px;height:48px;border-radius:15px;background:linear-gradient(145deg,#48a3ff,#0862d8);display:grid;place-items:center;font-size:23px;box-shadow:0 7px 18px #001a433d}
+.brand h1{font-size:19px;line-height:1.2;margin:0;font-weight:750;letter-spacing:-.3px}
+.brand p{margin:4px 0 0;color:#c9d8f3;font-size:12px}
+.nav{display:flex;align-items:center;justify-content:center;gap:6px;flex:1;flex-wrap:wrap}
+.nav a{color:#eaf1ff;text-decoration:none;padding:11px 14px;border-radius:10px;font-weight:650;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.nav a.active,.nav a:hover{background:#1677f2;color:white;box-shadow:0 4px 12px #071b4533}
+.admin-chip{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.avatar{width:39px;height:39px;border-radius:50%;background:#e8f1ff;color:#163e78;display:grid;place-items:center;font-weight:800;font-size:17px}
+.admin-chip strong{display:block;font-size:13px}.admin-chip small{display:block;color:#c9d8f3;font-size:11px}
+main{max-width:1600px;margin:auto;padding:25px clamp(15px,2vw,32px) 40px}
+.page-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;margin:0 0 20px}
+.eyebrow{color:var(--blue);font-weight:800;text-transform:uppercase;font-size:11px;letter-spacing:1.5px}
+h2{font-size:25px;letter-spacing:-.6px;margin:4px 0 3px;color:#122e60}
+.subtitle{color:var(--muted);margin:0}
+.date-pill{border:1px solid var(--line);background:white;color:#526584;padding:9px 13px;border-radius:11px;font-size:12px;white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:18px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;display:flex;align-items:center;gap:15px;box-shadow:var(--shadow);min-width:0}
+.stat-icon{height:58px;width:58px;border-radius:16px;display:grid;place-items:center;font-size:25px;flex-shrink:0}
+.blue{background:linear-gradient(145deg,#48a7ff,#0871ee);color:white}.green{background:linear-gradient(145deg,#20c997,#00875e);color:white}
+.orange{background:linear-gradient(145deg,#ffb13b,#f36b12);color:white}.purple{background:linear-gradient(145deg,#ad75ff,#7029df);color:white}
+.stat-label{font-size:12px;color:#637491;font-weight:650}.stat-value{font-size:28px;line-height:1.25;font-weight:800;letter-spacing:-.7px;margin:3px 0;color:#10234c}.stat-note{font-size:11px;color:#7d8ba4}
+.grid-two{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;margin-bottom:18px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:19px;min-width:0}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+.panel-title{margin:0;font-size:17px;color:#133369;display:flex;align-items:center;gap:10px;letter-spacing:-.25px}
+.title-icon{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--blue-soft);color:var(--blue);font-size:18px}
+.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:.15s}
+.btn-primary{background:linear-gradient(135deg,#2187ff,#075fd1);color:#fff;box-shadow:0 4px 10px #1677f226}
+.btn-green{background:linear-gradient(135deg,#11b981,#00835d);color:#fff}
+.btn-light{background:#f5f8fd;border:1px solid #dce6f4;color:#25436e}
+.btn:hover{filter:brightness(.97);transform:translateY(-1px)}
+select,input[type=text],input[type=search]{width:100%;border:1px solid #d6e0ee;background:#fff;color:#1c2d4d;border-radius:9px;padding:10px 12px;outline:none;min-width:0}
+select:focus,input:focus{border-color:#69a9ff;box-shadow:0 0 0 3px #1677f21a}
+.chart-wrap{height:265px;position:relative}
+.suggestions{display:grid;gap:9px}
+.suggestion{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px;border:1px solid #e7edf5;border-radius:12px;background:linear-gradient(100deg,#fbfdff,#f7f9fc)}
+.quote{width:35px;height:35px;border-radius:10px;display:grid;place-items:center;background:#e3f0ff;color:#1677f2;font-size:22px;font-weight:800}
+.quote.g{background:#dff8ed;color:#079669}.quote.o{background:#fff0df;color:#e97813}.quote.p{background:#efe4ff;color:#7c3aed}.quote.r{background:#ffe4ee;color:#db2777}
+.suggestion-text{font-size:12px;color:#263654;min-width:0}
+.suggestion-meta{display:flex;align-items:center;gap:10px;white-space:nowrap;font-size:11px;color:#8290a8}
+.tag{display:inline-block;padding:5px 9px;border-radius:99px;font-size:10px;font-weight:750;background:#e3efff;color:#1769cf}
+.tag.green-tag{background:#ddf8eb;color:#087f5b}.tag.orange-tag{background:#fff0d9;color:#b85b08}.tag.purple-tag{background:#eee4ff;color:#7029cf}.tag.pink-tag{background:#ffe3ed;color:#be185d}
+.management-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px}
+.form-box{padding:14px;border:1px solid #d8e8fc;background:linear-gradient(120deg,#f0f7ff,#f8fbff);border-radius:13px;margin-bottom:17px}
+.form-box.green-box{border-color:#ccefe0;background:linear-gradient(120deg,#effcf6,#f8fffb)}
+.form-grid{display:grid;grid-template-columns:1fr .8fr 1.35fr auto;align-items:end;gap:10px}
+.field label{display:block;font-size:11px;font-weight:750;color:#52627d;margin:0 0 6px}
+.field .btn{width:100%;white-space:nowrap}
+.table-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:16px 0 9px}
+.table-tools h3{font-size:15px;margin:0;color:#173568}
+.tool-fields{display:flex;gap:8px;min-width:0}.tool-fields input{width:190px}.tool-fields select{width:145px}
+.table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:590px;font-size:12px}
+thead{background:linear-gradient(100deg,#18396d,#214b84);color:white}
+.green-table thead{background:linear-gradient(100deg,#08684e,#0b8060)}
+th{font-weight:700;text-align:left;padding:11px 10px;white-space:nowrap}
+td{padding:9px 10px;border-top:1px solid #e8edf5;color:#30415f;vertical-align:middle}
+tbody tr:nth-child(even){background:#f8fafd}tbody tr:hover{background:#eef6ff}
+.action-btn{width:31px;height:29px;border:1px solid #9dc9ff;color:#0871ee;background:#fff;border-radius:7px;font-weight:800;margin-right:4px}
+.action-btn.delete{border-color:#ffc0ca;color:#e11d48}
+.green-table .action-btn{border-color:#a8e5c8;color:#07885d}.green-table .action-btn.delete{border-color:#ffc0ca;color:#e11d48}
+.empty-state{padding:22px;text-align:center;color:#8592a8}
+.footer-note{text-align:center;color:#91a0b7;font-size:11px;padding:25px 0 0}
+@media(max-width:1100px){.topbar{flex-wrap:wrap}.nav{order:3;flex-basis:100%;justify-content:flex-start}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-two,.management-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.topbar{padding:13px}.brand{min-width:0}.brand h1{font-size:16px}.admin-chip{margin-left:auto}.nav{gap:4px}.nav a{padding:9px;font-size:11px}.nav a span{display:none}main{padding:20px 12px 30px}.page-heading{align-items:flex-start;flex-direction:column}h2{font-size:22px}.stats{gap:10px}.stat{padding:12px;gap:10px}.stat-icon{width:42px;height:42px;border-radius:12px;font-size:20px}.stat-value{font-size:23px}.stat-label{font-size:11px}.stat-note{font-size:10px}.panel{padding:13px}.panel-title{font-size:15px}.suggestion{grid-template-columns:32px minmax(0,1fr);}.suggestion-meta{grid-column:2;justify-content:space-between}.quote{width:30px;height:30px}.form-grid{grid-template-columns:1fr}.table-tools{align-items:flex-start;flex-direction:column}.tool-fields{width:100%;flex-wrap:wrap}.tool-fields input,.tool-fields select{width:100%;flex:1}.panel-head{align-items:flex-start}.date-pill{white-space:normal}}
+</style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <h2>Papan Pemuka Analisa Maklumbalas</h2>
-        
-        <h3>Analisa Skor Pengajaran (Soalan T1)</h3>
-        <div class="chart-container">
-            <!-- Tempat Graf akan dipaparkan -->
-            <canvas id="skorChart"></canvas>
-        </div>
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">▣</div>
+    <div><h1>Sistem Maklumbalas</h1><p>Panel Pentadbir</p></div>
+  </div>
+  <nav class="nav" aria-label="Navigasi utama">
+    <a class="active" href="#dashboard">⌂ <span>Papan Pemuka</span></a>
+    <a href="#soalan">▤ <span>Soalan Kaji Selidik</span></a>
+    <a href="#pengajar">♟ <span>Pengajar</span></a>
+    <a href="#analisa">▥ <span>Analisa</span></a>
+  </nav>
+  <div class="admin-chip"><div class="avatar">A</div><div><strong>Admin</strong><small>Pentadbir Sistem</small></div></div>
+</header>
 
-        <hr>
+<main id="dashboard">
+  <div class="page-heading">
+    <div><div class="eyebrow">Ringkasan sistem</div><h2>Papan Pemuka Pentadbir</h2><p class="subtitle">Analisa maklum balas dan pengurusan data kaji selidik.</p></div>
+    <div class="date-pill">◷ &nbsp; Paparan analitik maklum balas</div>
+  </div>
 
-        <h3>Senarai Cadangan Penambahbaikan</h3>
-        <div id="senaraiCadangan">
-            <p>Memuatkan data cadangan...</p>          
-        </div>
-<hr>
-<h3>Pengurusan Soalan Kaji Selidik</h3>
-<div class="cadangan-box">
-    <form id="formTambahSoalan">
-        <div style="margin-bottom: 10px;">
-            <label>Kategori (Cth: Pengajaran, Prasarana):</label>
-            <input type="text" id="kategoriBaru" required placeholder="Pengajaran">
-        </div>
-        <div style="margin-bottom: 10px;">
-            <label>Kod Soalan (Cth: T2, B2):</label>
-            <input type="text" id="kodBaru" required placeholder="T2">
-        </div>
-        <div style="margin-bottom: 10px;">
-            <label>Soalan Penuh:</label>
-            <input type="text" id="soalanBaru" required placeholder="Masukkan soalan...">
-        </div>
-        <button type="submit">Tambah Soalan</button>
-    </form>
-</div>
+  <section class="stats" aria-label="Ringkasan statistik">
+    <article class="stat"><div class="stat-icon blue">▤</div><div><div class="stat-label">Jumlah Maklumbalas</div><div class="stat-value">—</div><div class="stat-note">Ringkasan rekod</div></div></article>
+    <article class="stat"><div class="stat-icon green">★</div><div><div class="stat-label">Purata Skor Keseluruhan</div><div class="stat-value">— <small style="font-size:13px">/ 5</small></div><div class="stat-note">Skor pengajaran</div></div></article>
+    <article class="stat"><div class="stat-icon orange">♟</div><div><div class="stat-label">Jumlah Pengajar</div><div class="stat-value">—</div><div class="stat-note">Senarai pengajar</div></div></article>
+    <article class="stat"><div class="stat-icon purple">▧</div><div><div class="stat-label">Jumlah Soalan</div><div class="stat-value">—</div><div class="stat-note">Soalan kaji selidik</div></div></article>
+  </section>
 
-<!-- ... (kod borang tambah soalan di atasnya) ... -->
-        
-        <hr>
-        <h3>Senarai Soalan Semasa</h3>
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-            <thead>
-                <tr style="background-color: #007bff; color: white; text-align: left;">
-                    <th style="padding: 10px; border: 1px solid #ddd;">Kategori</th>
-                    <th style="padding: 10px; border: 1px solid #ddd;">Kod</th>
-                    <th style="padding: 10px; border: 1px solid #ddd;">Soalan</th>
-                    <th style="padding: 10px; border: 1px solid #ddd;">Tindakan</th>
-                </tr>
-            </thead>
-            <tbody id="senaraiSoalanBody">
-                <tr><td colspan="4" style="padding: 10px; text-align: center;">Memuatkan data...</td></tr>
-            </tbody>
-        </table>
-    </div> <!-- Ini tag penutup untuk <div class="dashboard-container"> -->
+  <section class="grid-two" id="analisa">
+    <article class="panel">
+      <div class="panel-head"><h3 class="panel-title"><span class="title-icon">▥</span> Analisa Skor Pengajaran (Soalan T1)</h3>
+        <select id="tempohAnalisa" aria-label="Tempoh analisa" style="width:auto;max-width:150px"><option>6 Bulan Terakhir</option><option>12 Bulan Terakhir</option></select>
+      </div>
+      <div class="chart-wrap"><canvas id="skorChart" aria-label="Graf analisa skor pengajaran"></canvas></div>
+    </article>
+    <article class="panel">
+      <div class="panel-head"><h3 class="panel-title"><span class="title-icon">▰</span> Senarai Cadangan Penambahbaikan</h3><button class="btn btn-light" type="button" id="lihatCadangan">Lihat Semua</button></div>
+      <div id="senaraiCadangan" class="suggestions"><p class="empty-state">Memuatkan data cadangan...</p></div>
+    </article>
+  </section>
 
-        <!-- --- PENGURUSAN PENGAJAR --- -->
-        <hr style="margin-top: 40px; border: 2px solid #28a745;">
-        <h3 style="color: #28a745;">Pengurusan Senarai Pengajar</h3>
-        
-        <div class="cadangan-box" style="border-left: 4px solid #28a745;">
-            <form id="formTambahPengajar">
-                <div style="margin-bottom: 10px;">
-                    <label>Bahagian / Jabatan:</label>
-                    <select id="jabatanPengajarBaru" required style="width: 100%; padding: 8px;">
-                        <option value="">Memuatkan data...</option>
-                    </select>
-                </div>
-                <div style="margin-bottom: 10px;">
-                    <label>Nama Pengajar:</label>
-                    <input type="text" id="namaPengajarBaru" required placeholder="Contoh: En. Ahmad bin Abu" style="width: 100%; padding: 8px;">
-                </div>
-                <button type="submit" style="background-color: #28a745; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 4px;">Tambah Pengajar</button>
-            </form>
-        </div>
+  <section class="management-grid">
+    <article class="panel" id="soalan">
+      <div class="panel-head"><h3 class="panel-title"><span class="title-icon">▤</span> Pengurusan Soalan Kaji Selidik</h3><button class="btn btn-primary" type="button" onclick="document.getElementById('kategoriBaru').focus()">＋ Tambah Soalan</button></div>
+      <div class="form-box">
+        <form id="formTambahSoalan">
+          <div class="form-grid">
+            <div class="field"><label for="kategoriBaru">Kategori</label><input type="text" id="kategoriBaru" required placeholder="Contoh: Pengajaran"></div>
+            <div class="field"><label for="kodBaru">Kod Soalan</label><input type="text" id="kodBaru" required placeholder="Contoh: T2"></div>
+            <div class="field"><label for="soalanBaru">Soalan Penuh</label><input type="text" id="soalanBaru" required placeholder="Masukkan soalan kaji selidik..."></div>
+            <div class="field"><label>&nbsp;</label><button class="btn btn-primary" type="submit">＋ Simpan Soalan</button></div>
+          </div>
+        </form>
+      </div>
+      <div class="table-tools"><h3>Senarai Soalan Semasa</h3><div class="tool-fields"><input type="search" id="cariSoalanUI" placeholder="⌕ Cari kod atau soalan..." aria-label="Cari soalan"><select id="tapisKategoriUI" aria-label="Tapis kategori"><option value="">Semua Kategori</option></select></div></div>
+      <div class="table-scroll"><table><thead><tr><th>Kategori</th><th>Kod</th><th>Soalan</th><th>Tindakan</th></tr></thead><tbody id="senaraiSoalanBody"><tr><td colspan="4" class="empty-state">Memuatkan data...</td></tr></tbody></table></div>
+    </article>
 
-        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 40px;">
-            <thead>
-                <tr style="background-color: #28a745; color: white; text-align: left;">
-                    <th style="padding: 10px; border: 1px solid #ddd;">Bahagian / Jabatan</th>
-                    <th style="padding: 10px; border: 1px solid #ddd;">Nama Pengajar</th>
-                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Tindakan</th>
-                </tr>
-            </thead>
-            <tbody id="senaraiPengajarBody">
-                <tr><td colspan="3" style="padding: 10px; text-align: center;">Memuatkan data...</td></tr>
-            </tbody>
-        </table>
-    </div>
+    <article class="panel" id="pengajar">
+      <div class="panel-head"><h3 class="panel-title" style="color:#087653"><span class="title-icon" style="background:#e4f8ee;color:#079669">♟</span> Pengurusan Senarai Pengajar</h3></div>
+      <div class="form-box green-box">
+        <form id="formTambahPengajar">
+          <div class="form-grid" style="grid-template-columns:1fr 1.2fr auto">
+            <div class="field"><label for="jabatanPengajarBaru">Bahagian / Jabatan</label><select id="jabatanPengajarBaru" required><option value="">Memuatkan data...</option></select></div>
+            <div class="field"><label for="namaPengajarBaru">Nama Pengajar</label><input type="text" id="namaPengajarBaru" required placeholder="Contoh: En. Ahmad bin Abu"></div>
+            <div class="field"><label>&nbsp;</label><button class="btn btn-green" type="submit">＋ Simpan Pengajar</button></div>
+          </div>
+        </form>
+      </div>
+      <div class="table-tools"><h3>Senarai Pengajar Semasa</h3><div class="tool-fields"><input type="search" id="cariPengajarUI" placeholder="⌕ Cari nama pengajar..." aria-label="Cari pengajar"></div></div>
+      <div class="table-scroll green-table"><table><thead><tr><th>Bahagian / Jabatan</th><th>Nama Pengajar</th><th>Tindakan</th></tr></thead><tbody id="senaraiPengajarBody"><tr><td colspan="3" class="empty-state">Memuatkan data...</td></tr></tbody></table></div>
+    </article>
+  </section>
+  <div class="footer-note">Sistem Maklumbalas · Panel Pentadbir</div>
+</main>
 
-    <!-- Skrip Supabase & Logik Admin -->
-    <script type="module" src="admin.js"></script>
+<script>
+/* Graf demo visual sahaja. Sambungkan data sebenar melalui admin.js jika tersedia. */
+const chartCanvas = document.getElementById('skorChart');
+if (chartCanvas && window.Chart) {
+  new Chart(chartCanvas, {
+    type: 'bar',
+    data: {
+      labels: ['Apr', 'Mei', 'Jun', 'Jul', 'Ogo', 'Sep'],
+      datasets: [{
+        label: 'Skor purata',
+        data: [3.8, 4.1, 4.3, 4.2, 4.5, 4.4],
+        backgroundColor: ['#579bff','#3b91f5','#19b4d8','#12c6a7','#ff9d35','#f34f91'],
+        borderRadius: 7, borderSkipped: false, maxBarThickness: 58
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => 'Skor: ' + c.raw + ' / 5' } } },
+      scales: {
+        y: { min: 0, max: 5, ticks: { stepSize: 1, color: '#64748b' }, grid: { color: '#e7edf5' }, border: { display: false } },
+        x: { ticks: { color: '#52627d' }, grid: { display: false }, border: { display: false } }
+      }
+    }
+  });
+}
+/* Sambungan logik asal dikekalkan. Pastikan admin.js menggunakan ID elemen yang sama. */
+</script>
+<script type="module" src="admin.js"></script>
 </body>
 </html>
