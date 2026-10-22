@@ -109,7 +109,7 @@ if (formTambah) {
         }
     });
 }
-// --- FUNGSI UNTUK PAPAR & PADAM SOALAN ---
+// --- FUNGSI UNTUK PAPAR, EDIT & PADAM SOALAN ---
 async function paparSenaraiSoalan() {
     const tbody = document.getElementById('senaraiSoalanBody');
     if (!tbody) return;
@@ -127,38 +127,72 @@ async function paparSenaraiSoalan() {
         return;
     }
 
-    tbody.innerHTML = ''; // Kosongkan loading teks
+    tbody.innerHTML = ''; 
 
     if (data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" style="padding:10px; text-align:center;">Tiada soalan direkodkan.</td></tr>';
         return;
     }
 
-    // Bina baris jadual untuk setiap soalan
+    // Bina baris jadual untuk setiap soalan beserta ikon Edit dan Delete
     data.forEach(item => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td style="padding: 8px; border: 1px solid #ddd;">${item.kategori}</td>
             <td style="padding: 8px; border: 1px solid #ddd;">${item.kod_soalan}</td>
             <td style="padding: 8px; border: 1px solid #ddd;">${item.soalan}</td>
-            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
-                <button class="btn-padam" data-id="${item.id}" style="background: #dc3545; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">Padam</button>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: center; white-space: nowrap;">
+                <button class="btn-edit" data-id="${item.id}" data-kategori="${item.kategori}" data-kod="${item.kod_soalan}" data-soalan="${item.soalan}" style="background: #ffc107; color: #000; border: none; padding: 6px 10px; cursor: pointer; border-radius: 4px; margin-right: 5px;" title="Edit Soalan">✏️</button>
+                <button class="btn-padam" data-id="${item.id}" style="background: #dc3545; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 4px;" title="Padam Soalan">🗑️</button>
             </td>
         `;
         tbody.appendChild(tr);
     });
 
-    // Tambah fungsi "Click" pada setiap butang Padam
+    // Fungsi Click pada butang Edit (Pensel)
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const btnElement = e.currentTarget;
+            const id = btnElement.getAttribute('data-id');
+            
+            // Paparkan popup (prompt) untuk admin kemaskini data
+            const newKategori = prompt("Kemaskini Kategori:", btnElement.getAttribute('data-kategori'));
+            if (newKategori === null) return; // Terbatal jika admin tekan Cancel
+            
+            const newKod = prompt("Kemaskini Kod Soalan:", btnElement.getAttribute('data-kod'));
+            if (newKod === null) return; 
+            
+            const newSoalan = prompt("Kemaskini Soalan Penuh:", btnElement.getAttribute('data-soalan'));
+            if (newSoalan === null) return;
+
+            // Hantar data kemaskini ke Supabase
+            const { error: updateErr } = await supabase
+                .from('senarai_soalan')
+                .update({ kategori: newKategori, kod_soalan: newKod, soalan: newSoalan })
+                .eq('id', id);
+
+            if (updateErr) {
+                alert("Ralat mengemaskini soalan.");
+                console.error(updateErr);
+            } else {
+                alert("Soalan berjaya dikemaskini!");
+                paparSenaraiSoalan(); // Refresh jadual secara automatik
+            }
+        });
+    });
+
+    // Fungsi Click pada butang Padam (Tong Sampah)
     document.querySelectorAll('.btn-padam').forEach(btn => {
         btn.addEventListener('click', async (e) => {
-            const id = e.target.getAttribute('data-id');
+            const id = e.currentTarget.getAttribute('data-id');
             if (confirm("Adakah anda pasti mahu memadam soalan ini?")) {
                 const { error: delErr } = await supabase.from('senarai_soalan').delete().eq('id', id);
                 if (delErr) {
                     alert("Ralat memadam soalan.");
+                    console.error(delErr);
                 } else {
                     alert("Soalan berjaya dipadam!");
-                    paparSenaraiSoalan(); // Refresh jadual secara automatik
+                    paparSenaraiSoalan(); 
                 }
             }
         });
