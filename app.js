@@ -120,17 +120,21 @@ form.addEventListener('submit', async (e) => {
     submitBtn.textContent = 'Menghantar...';
     submitBtn.disabled = true;
 
-    const email = document.getElementById('email').value;
-    const jabatanId = jabatanSelect.value;
-    const pengajarId = pengajarSelect.value;
-    const skorT1 = document.getElementById('T1').value;
-    const cadanganTeks = document.getElementById('cadangan').value;
-
-    // Jana nombor tiket rawak (Contoh: TKT-123456)
-    const randomNum = Math.floor(100000 + Math.random() * 900000);
-    const noTiket = `TKT-${randomNum}`;
-
     try {
+        // Ambil data asas dengan semakan selamat (elak ralat null)
+        const emailInput = document.getElementById('email');
+        const jabatanInput = document.getElementById('jabatan');
+        const pengajarInput = document.getElementById('pengajar');
+        const cadanganInput = document.getElementById('cadangan');
+
+        const email = emailInput ? emailInput.value : '';
+        const jabatanId = jabatanInput ? jabatanInput.value : '';
+        const pengajarId = pengajarInput ? pengajarInput.value : null;
+        const cadanganTeks = cadanganInput ? cadanganInput.value : '';
+
+        const randomNum = Math.floor(100000 + Math.random() * 900000);
+        const noTiket = `TKT-${randomNum}`;
+
         // A. Masukkan data ke jadual tiket_maklumbalas
         const { data: tiketData, error: tiketError } = await supabase
             .from('tiket_maklumbalas')
@@ -141,38 +145,53 @@ form.addEventListener('submit', async (e) => {
                 pengajar_id: pengajarId 
             }])
             .select();
+        
         if (tiketError) throw tiketError;
-
         const tiketId = tiketData[0].id;
 
-        // B. Masukkan markah skala
-        const { error: skalaError } = await supabase
-            .from('jawapan_skala')
-            .insert([{
-                tiket_id: tiketId,
-                kategori: 'Pengajaran',
-                kod_soalan: 'T1',
-                soalan: 'Pengajar bertugas menepati masa',
-                skor: parseInt(skorT1)
-            }]);
-        if (skalaError) throw skalaError;
+        // B. Kutip SEMUA jawapan dari Radio Button secara automatik
+        const semuaSoalan = document.querySelectorAll('.soalan-item');
+        const senaraiJawapan = [];
+
+        semuaSoalan.forEach(item => {
+            const kod = item.getAttribute('data-kod');
+            // Cari butang radio mana yang ditanda (checked)
+            const jawapanDipilih = item.querySelector(`input[name="skor_${kod}"]:checked`);
+            
+            // PASTIKAN ada jawapan dipilih sebelum baca .value
+            if (jawapanDipilih) {
+                senaraiJawapan.push({
+                    tiket_id: tiketId,
+                    kategori: item.getAttribute('data-kategori'),
+                    kod_soalan: kod,
+                    soalan: item.getAttribute('data-soalan'),
+                    skor: parseInt(jawapanDipilih.value)
+                });
+            }
+        });
+
+        // Masukkan semua jawapan ke database (Bulk Insert) jika ada
+        if (senaraiJawapan.length > 0) {
+            const { error: skalaError } = await supabase.from('jawapan_skala').insert(senaraiJawapan);
+            if (skalaError) throw skalaError;
+        }
 
         // C. Masukkan teks cadangan
-        const { error: cadanganError } = await supabase
-            .from('jawapan_cadangan')
-            .insert([{
-                tiket_id: tiketId,
-                teks_cadangan: cadanganTeks
-            }]);
-        if (cadanganError) throw cadanganError;
+        if (cadanganTeks.trim() !== '') {
+            const { error: cadanganError } = await supabase.from('jawapan_cadangan').insert([{ tiket_id: tiketId, teks_cadangan: cadanganTeks }]);
+            if (cadanganError) throw cadanganError;
+        }
 
-        // Paparkan mesej berjaya
+        // D. Papar mesej berjaya
         form.classList.add('hidden');
-        successMessage.classList.remove('hidden');
-        ticketNoSpan.textContent = noTiket;
+        const successMessage = document.getElementById('successMessage');
+        const ticketNoSpan = document.getElementById('ticketNo');
+        
+        if(successMessage) successMessage.classList.remove('hidden');
+        if(ticketNoSpan) ticketNoSpan.textContent = noTiket;
 
     } catch (error) {
-        alert("Terdapat ralat semasa menghantar maklumbalas. Sila cuba lagi.");
+        alert("Terdapat ralat semasa menghantar maklumbalas.");
         console.error(error);
     } finally {
         submitBtn.textContent = 'Hantar Maklumbalas';
