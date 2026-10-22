@@ -28,40 +28,51 @@ loadJabatan();
 
 const soalanContainer = document.getElementById('dynamic-soalan-container');
 
-// --- CARI BAHAGIAN INI DALAM app.js ---
 async function loadSoalan() {
     const { data, error } = await supabase
         .from('senarai_soalan')
         .select('*')
         .eq('status_aktif', true)
-        .order('kategori') // Susunan pertama: Ikut Kategori
-        .order('kod_soalan'); // <--- TAMBAH BARIS INI: Susunan kedua: Ikut Kod Soalan (A1, A2, F1, F2 dll)
+        .order('kategori')
+        .order('kod_soalan');
 
     if (error) {
         console.error("Ralat ambil soalan:", error);
         return;
     }
 
-    let htmlKandungan = '';
+    // 1. Letak arahan skala penilaian di bahagian atas sekali
+    let htmlKandungan = `
+        <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #ccc;">
+            <strong style="font-size: 16px;">Panduan Skala Penilaian:</strong><br>
+            <span style="display: inline-block; margin-top: 8px;">
+                <strong>1</strong> - Lemah &nbsp;&nbsp;|&nbsp;&nbsp; 
+                <strong>2</strong> - Sederhana &nbsp;&nbsp;|&nbsp;&nbsp; 
+                <strong>3</strong> - Memuaskan &nbsp;&nbsp;|&nbsp;&nbsp; 
+                <strong>4</strong> - Baik &nbsp;&nbsp;|&nbsp;&nbsp; 
+                <strong>5</strong> - Cemerlang
+            </span>
+        </div>
+    `;
     let kategoriSemasa = '';
 
     data.forEach(item => {
-        // Buat tajuk kategori jika ia kategori baharu
+        // Buat tajuk kategori
         if (item.kategori !== kategoriSemasa) {
-            htmlKandungan += `<h3>Bahagian: ${item.kategori}</h3>`;
+            htmlKandungan += `<h3 style="margin-top: 30px; border-bottom: 2px solid #007bff; padding-bottom: 5px;">${item.kategori}</h3>`;
             kategoriSemasa = item.kategori;
         }
 
-        // Bina kotak soalan (Menggunakan Radio Button)
+        // 2. Bina kotak soalan (Radio Button dengan angka sahaja)
         htmlKandungan += `
-            <div class="form-group soalan-item" data-kod="${item.kod_soalan}" data-kategori="${item.kategori}" data-soalan="${item.soalan}">
-                <label style="font-weight: bold;">${item.kod_soalan}: ${item.soalan}</label>
-                <div style="display: flex; gap: 15px; margin-top: 10px; flex-wrap: wrap;">
-                    <label style="cursor: pointer;"><input type="radio" name="skor_${item.kod_soalan}" value="1" required> 1 - Lemah</label>
-                    <label style="cursor: pointer;"><input type="radio" name="skor_${item.kod_soalan}" value="2"> 2 - Sederhana</label>
-                    <label style="cursor: pointer;"><input type="radio" name="skor_${item.kod_soalan}" value="3"> 3 - Memuaskan</label>
-                    <label style="cursor: pointer;"><input type="radio" name="skor_${item.kod_soalan}" value="4"> 4 - Baik</label>
-                    <label style="cursor: pointer;"><input type="radio" name="skor_${item.kod_soalan}" value="5"> 5 - Cemerlang</label>
+            <div class="form-group soalan-item" data-kod="${item.kod_soalan}" data-kategori="${item.kategori}" data-soalan="${item.soalan}" style="margin-bottom: 20px; padding: 15px; background: #fff; border: 1px solid #eee; border-radius: 5px;">
+                <label style="font-weight: bold; margin-bottom: 15px; display: block; font-size: 15px;">${item.kod_soalan}: ${item.soalan}</label>
+                <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 16px;"><input type="radio" name="skor_${item.kod_soalan}" value="1" style="transform: scale(1.3);" required> 1</label>
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 16px;"><input type="radio" name="skor_${item.kod_soalan}" value="2" style="transform: scale(1.3);"> 2</label>
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 16px;"><input type="radio" name="skor_${item.kod_soalan}" value="3" style="transform: scale(1.3);"> 3</label>
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 16px;"><input type="radio" name="skor_${item.kod_soalan}" value="4" style="transform: scale(1.3);"> 4</label>
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 16px;"><input type="radio" name="skor_${item.kod_soalan}" value="5" style="transform: scale(1.3);"> 5</label>
                 </div>
             </div>
         `;
