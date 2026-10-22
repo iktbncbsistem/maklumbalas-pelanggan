@@ -52,18 +52,17 @@ async function loadSoalan() {
             kategoriSemasa = item.kategori;
         }
 
-        // Bina kotak soalan (dropdown skala 1-5)
+        // Bina kotak soalan (Menggunakan Radio Button)
         htmlKandungan += `
-            <div class="form-group">
-                <label>${item.kod_soalan}: ${item.soalan}</label>
-                <select class="skor-input" data-kod="${item.kod_soalan}" data-kategori="${item.kategori}" data-soalan="${item.soalan}" required>
-                    <option value="">Pilih Skala...</option>
-                    <option value="1">1 - Lemah</option>
-                    <option value="2">2 - Sederhana</option>
-                    <option value="3">3 - Memuaskan</option>
-                    <option value="4">4 - Baik</option>
-                    <option value="5">5 - Cemerlang</option>
-                </select>
+            <div class="form-group soalan-item" data-kod="${item.kod_soalan}" data-kategori="${item.kategori}" data-soalan="${item.soalan}">
+                <label style="font-weight: bold;">${item.kod_soalan}: ${item.soalan}</label>
+                <div style="display: flex; gap: 15px; margin-top: 10px; flex-wrap: wrap;">
+                    <label style="cursor: pointer;"><input type="radio" name="skor_${item.kod_soalan}" value="1" required> 1 - Lemah</label>
+                    <label style="cursor: pointer;"><input type="radio" name="skor_${item.kod_soalan}" value="2"> 2 - Sederhana</label>
+                    <label style="cursor: pointer;"><input type="radio" name="skor_${item.kod_soalan}" value="3"> 3 - Memuaskan</label>
+                    <label style="cursor: pointer;"><input type="radio" name="skor_${item.kod_soalan}" value="4"> 4 - Baik</label>
+                    <label style="cursor: pointer;"><input type="radio" name="skor_${item.kod_soalan}" value="5"> 5 - Cemerlang</label>
+                </div>
             </div>
         `;
     });
