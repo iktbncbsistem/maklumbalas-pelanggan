@@ -208,3 +208,65 @@ if (formPengajar) {
 paparSenaraiSoalan();
 muatDropdownJabatanAdmin();
 paparSenaraiPengajar();
+
+// ==========================================
+// 4. ENJIN DASHBOARD (STATISTIK & CADANGAN)
+// ==========================================
+async function muatEnjinDashboard() {
+    try {
+        // A. Tarik Jumlah Soalan
+        const { count: countSoalan } = await supabase.from('senarai_soalan').select('*', { count: 'exact', head: true });
+        if (countSoalan !== null) document.getElementById('stat-soalan').textContent = countSoalan;
+
+        // B. Tarik Jumlah Pengajar
+        const { count: countPengajar } = await supabase.from('pengajar').select('*', { count: 'exact', head: true });
+        if (countPengajar !== null) document.getElementById('stat-pengajar').textContent = countPengajar;
+
+        // C. Tarik Jumlah Responden (Tiket Maklumbalas)
+        const { count: countTiket } = await supabase.from('tiket_maklumbalas').select('*', { count: 'exact', head: true });
+        if (countTiket !== null) document.getElementById('stat-maklumbalas').textContent = countTiket;
+
+        // D. Kira Purata Skor Keseluruhan
+        const { data: dataSkor } = await supabase.from('jawapan_skala').select('skor');
+        if (dataSkor && dataSkor.length > 0) {
+            const jumlahSkor = dataSkor.reduce((hasil, item) => hasil + item.skor, 0);
+            const purata = (jumlahSkor / dataSkor.length).toFixed(1);
+            document.getElementById('stat-skor').innerHTML = `${purata} <small style="font-size:13px">/ 5</small>`;
+        } else {
+            document.getElementById('stat-skor').innerHTML = `0.0 <small style="font-size:13px">/ 5</small>`;
+        }
+
+        // E. Paparkan 5 Cadangan Terkini
+        const { data: dataCadangan, error: errCadangan } = await supabase
+            .from('jawapan_cadangan')
+            .select('teks_cadangan, created_at')
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        const bekasCadangan = document.getElementById('senaraiCadangan');
+        if (!errCadangan && dataCadangan.length > 0) {
+            bekasCadangan.innerHTML = ''; // Kosongkan placeholder
+            const iconWarna = ['g', 'o', 'p', 'r', '']; // Variasi warna ikon untuk UI
+            
+            dataCadangan.forEach((item, index) => {
+                const tarikh = new Date(item.created_at).toLocaleDateString('ms-MY');
+                const warna = iconWarna[index % iconWarna.length];
+                bekasCadangan.innerHTML += `
+                    <div class="suggestion">
+                        <div class="quote ${warna}">“</div>
+                        <div class="suggestion-text">${item.teks_cadangan}</div>
+                        <div class="suggestion-meta"><span class="tag">Pelajar</span> ${tarikh}</div>
+                    </div>
+                `;
+            });
+        } else {
+            bekasCadangan.innerHTML = '<p class="empty-state">Belum ada cadangan direkodkan.</p>';
+        }
+
+    } catch (error) {
+        console.error("Ralat memuatkan enjin dashboard:", error);
+    }
+}
+
+// Panggil enjin untuk hidupkan data bila page dibuka!
+muatEnjinDashboard();
