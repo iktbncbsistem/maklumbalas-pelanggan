@@ -86,7 +86,9 @@ async function loadDashboardData() {
 loadDashboardData();
 
 
-// Fungsi untuk tambah soalan baharu dari Admin
+// Variable untuk simpan ID soalan jika dalam mode Edit
+let editSoalanId = null; 
+
 const formTambah = document.getElementById('formTambahSoalan');
 if (formTambah) {
     formTambah.addEventListener('submit', async (e) => {
@@ -94,18 +96,41 @@ if (formTambah) {
         const kategori = document.getElementById('kategoriBaru').value;
         const kod = document.getElementById('kodBaru').value;
         const soalan = document.getElementById('soalanBaru').value;
+        const submitBtnAdmin = document.querySelector('#formTambahSoalan button[type="submit"]');
 
-        const { error } = await supabase
-            .from('senarai_soalan')
-            .insert([{ kategori: kategori, kod_soalan: kod, soalan: soalan }]);
+        if (editSoalanId) {
+            // JIKA MODE EDIT: Buat UPDATE ke database
+            const { error } = await supabase
+                .from('senarai_soalan')
+                .update({ kategori: kategori, kod_soalan: kod, soalan: soalan })
+                .eq('id', editSoalanId);
 
-        if (error) {
-            alert("Ralat menambah soalan!");
-            console.error(error);
+            if (error) {
+                alert("Ralat mengemaskini soalan!");
+                console.error(error);
+            } else {
+                alert("Soalan berjaya dikemaskini!");
+                editSoalanId = null; // Reset kembali ke mode Tambah
+                submitBtnAdmin.textContent = "Tambah Soalan"; // Kembalikan teks butang
+                submitBtnAdmin.style.background = "#007bff"; // Kembalikan warna biru
+                submitBtnAdmin.style.color = "white";
+                formTambah.reset();
+                paparSenaraiSoalan();
+            }
         } else {
-            alert("Soalan berjaya ditambah!");
-            formTambah.reset(); // Kosongkan borang
-            paparSenaraiSoalan();
+            // JIKA MODE TAMBAH: Buat INSERT macam biasa
+            const { error } = await supabase
+                .from('senarai_soalan')
+                .insert([{ kategori: kategori, kod_soalan: kod, soalan: soalan }]);
+
+            if (error) {
+                alert("Ralat menambah soalan!");
+                console.error(error);
+            } else {
+                alert("Soalan berjaya ditambah!");
+                formTambah.reset();
+                paparSenaraiSoalan();
+            }
         }
     });
 }
@@ -149,35 +174,33 @@ async function paparSenaraiSoalan() {
         tbody.appendChild(tr);
     });
 
-    // Fungsi Click pada butang Edit (Pensel)
+   // Fungsi Click pada butang Edit (Pensel)
     document.querySelectorAll('.btn-edit').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
+        btn.addEventListener('click', (e) => {
             const btnElement = e.currentTarget;
+            
+            // 1. Ambil data dari jadual
             const id = btnElement.getAttribute('data-id');
+            const kategori = btnElement.getAttribute('data-kategori');
+            const kod = btnElement.getAttribute('data-kod');
+            const soalan = btnElement.getAttribute('data-soalan');
             
-            // Paparkan popup (prompt) untuk admin kemaskini data
-            const newKategori = prompt("Kemaskini Kategori:", btnElement.getAttribute('data-kategori'));
-            if (newKategori === null) return; // Terbatal jika admin tekan Cancel
+            // 2. Masukkan data ke dalam borang di atas
+            document.getElementById('kategoriBaru').value = kategori;
+            document.getElementById('kodBaru').value = kod;
+            document.getElementById('soalanBaru').value = soalan;
             
-            const newKod = prompt("Kemaskini Kod Soalan:", btnElement.getAttribute('data-kod'));
-            if (newKod === null) return; 
+            // 3. Setkan ID ini sebagai soalan yang sedang diedit
+            editSoalanId = id;
             
-            const newSoalan = prompt("Kemaskini Soalan Penuh:", btnElement.getAttribute('data-soalan'));
-            if (newSoalan === null) return;
-
-            // Hantar data kemaskini ke Supabase
-            const { error: updateErr } = await supabase
-                .from('senarai_soalan')
-                .update({ kategori: newKategori, kod_soalan: newKod, soalan: newSoalan })
-                .eq('id', id);
-
-            if (updateErr) {
-                alert("Ralat mengemaskini soalan.");
-                console.error(updateErr);
-            } else {
-                alert("Soalan berjaya dikemaskini!");
-                paparSenaraiSoalan(); // Refresh jadual secara automatik
-            }
+            // 4. Tukar rupa butang submit
+            const submitBtn = document.querySelector('#formTambahSoalan button[type="submit"]');
+            submitBtn.textContent = "Kemaskini Soalan";
+            submitBtn.style.background = "#ffc107"; // Tukar warna amaran (Kuning)
+            submitBtn.style.color = "#000";
+            
+            // 5. Scroll skrin ke arah borang secara automatik
+            document.getElementById('formTambahSoalan').scrollIntoView({ behavior: 'smooth' });
         });
     });
 
