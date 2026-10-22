@@ -275,27 +275,40 @@ if (formPengajar) {
 // ==========================================
 async function muatEnjinDashboard() {
     try {
+        // A. Tarik Jumlah Soalan
         const { count: countSoalan } = await supabase.from('senarai_soalan').select('*', { count: 'exact', head: true });
-        if (countSoalan !== null) document.getElementById('stat-soalan').textContent = countSoalan;
+        const elSoalan = document.getElementById('stat-soalan');
+        if (countSoalan !== null && elSoalan) elSoalan.textContent = countSoalan;
 
+        // B. Tarik Jumlah Pengajar (Abaikan jika kotak tiada di UI)
         const { count: countPengajar } = await supabase.from('pengajar').select('*', { count: 'exact', head: true });
-        if (countPengajar !== null) document.getElementById('stat-pengajar').textContent = countPengajar;
+        const elPengajar = document.getElementById('stat-pengajar');
+        if (countPengajar !== null && elPengajar) elPengajar.textContent = countPengajar;
 
+        // C. Tarik Jumlah Bahagian
         const { count: countJabatan } = await supabase.from('jabatan').select('*', { count: 'exact', head: true });
-        if (countJabatan !== null) document.getElementById('stat-jabatan').textContent = countJabatan;
+        const elJabatan = document.getElementById('stat-jabatan');
+        if (countJabatan !== null && elJabatan) elJabatan.textContent = countJabatan;
 
+        // D. Tarik Jumlah Responden
         const { count: countTiket } = await supabase.from('tiket_maklumbalas').select('*', { count: 'exact', head: true });
-        if (countTiket !== null) document.getElementById('stat-maklumbalas').textContent = countTiket;
+        const elTiket = document.getElementById('stat-maklumbalas');
+        if (countTiket !== null && elTiket) elTiket.textContent = countTiket;
 
+        // E. Kira Purata Skor Keseluruhan
         const { data: dataSkor } = await supabase.from('jawapan_skala').select('skor');
-        if (dataSkor && dataSkor.length > 0) {
-            const jumlahSkor = dataSkor.reduce((hasil, item) => hasil + item.skor, 0);
-            const purata = (jumlahSkor / dataSkor.length).toFixed(1);
-            document.getElementById('stat-skor').innerHTML = `${purata} <small style="font-size:13px">/ 5</small>`;
-        } else {
-            document.getElementById('stat-skor').innerHTML = `0.0 <small style="font-size:13px">/ 5</small>`;
+        const elSkor = document.getElementById('stat-skor');
+        if (elSkor) {
+            if (dataSkor && dataSkor.length > 0) {
+                const jumlahSkor = dataSkor.reduce((hasil, item) => hasil + item.skor, 0);
+                const purata = (jumlahSkor / dataSkor.length).toFixed(1);
+                elSkor.innerHTML = `${purata} <small style="font-size:13px">/ 5</small>`;
+            } else {
+                elSkor.innerHTML = `0.0 <small style="font-size:13px">/ 5</small>`;
+            }
         }
 
+        // F. Paparkan 5 Cadangan Terkini
         const { data: dataCadangan, error: errCadangan } = await supabase
             .from('jawapan_cadangan')
             .select('teks_cadangan, created_at')
@@ -303,30 +316,31 @@ async function muatEnjinDashboard() {
             .limit(5);
 
         const bekasCadangan = document.getElementById('senaraiCadangan');
-        if (!errCadangan && dataCadangan.length > 0) {
-            bekasCadangan.innerHTML = ''; 
-            const iconWarna = ['g', 'o', 'p', 'r', '']; 
-            
-            dataCadangan.forEach((item, index) => {
-                const tarikh = new Date(item.created_at).toLocaleDateString('ms-MY');
-                const warna = iconWarna[index % iconWarna.length];
-                bekasCadangan.innerHTML += `
-                    <div class="suggestion">
-                        <div class="quote ${warna}">“</div>
-                        <div class="suggestion-text">${item.teks_cadangan}</div>
-                        <div class="suggestion-meta"><span class="tag">Pelajar</span> ${tarikh}</div>
-                    </div>
-                `;
-            });
-        } else {
-            bekasCadangan.innerHTML = '<p class="empty-state">Belum ada cadangan direkodkan.</p>';
+        if (bekasCadangan) {
+            if (!errCadangan && dataCadangan.length > 0) {
+                bekasCadangan.innerHTML = ''; 
+                const iconWarna = ['g', 'o', 'p', 'r', '']; 
+                
+                dataCadangan.forEach((item, index) => {
+                    const tarikh = new Date(item.created_at).toLocaleDateString('ms-MY');
+                    const warna = iconWarna[index % iconWarna.length];
+                    bekasCadangan.innerHTML += `
+                        <div class="suggestion">
+                            <div class="quote ${warna}">“</div>
+                            <div class="suggestion-text">${item.teks_cadangan}</div>
+                            <div class="suggestion-meta"><span class="tag">Pelajar</span> ${tarikh}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                bekasCadangan.innerHTML = '<p class="empty-state">Belum ada cadangan direkodkan.</p>';
+            }
         }
 
     } catch (error) {
         console.error("Ralat memuatkan enjin dashboard:", error);
     }
 }
-
 // ==========================================
 // 6. JALANKAN SEMUA FUNGSI BILA PAGE DIBUKA
 // ==========================================
