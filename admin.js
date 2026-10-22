@@ -1,94 +1,101 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+// --- PASTIKAN BOS IMPORT SUPABASE DI SINI SEPERTI BIASA ---
+// import { supabase } from './supabase.js'; (Atau mengikut cara setup bos)
 
-const supabaseUrl = 'https://hohsvbbbtuwvcrmbfgjm.supabase.co';
-const supabaseKey = 'sb_publishable_yDdaql6HnLx4akA6jyIWBA_V7Vs7nZU';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function loadDashboardData() {
-    // 1. Ambil data skor dari jadual jawapan_skala
-    const { data: dataSkala, error: errorSkala } = await supabase
-        .from('jawapan_skala')
-        .select('skor');
+// ==========================================
+// 1. FUNGSI TUKAR TAB & TARIKH (UNTUK UI)
+// ==========================================
+window.tukarTab = function(tabName) {
+    document.getElementById('tab-laporan').style.display = (tabName === 'laporan') ? 'block' : 'none';
+    document.getElementById('tab-tetapan').style.display = (tabName === 'tetapan') ? 'block' : 'none';
+    
+    const menuLaporan = document.getElementById('menu-laporan');
+    const menuTetapan = document.getElementById('menu-tetapan');
+    
+    if (tabName === 'laporan') {
+        menuLaporan.classList.add('active');
+        menuTetapan.classList.remove('active');
+    } else {
+        menuTetapan.classList.add('active');
+        menuLaporan.classList.remove('active');
+    }
+};
 
-    if (errorSkala) {
-        console.error("Ralat ambil data skala:", errorSkala);
+const elTarikh = document.getElementById('tarikhSemasa');
+if(elTarikh) {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    elTarikh.innerHTML = '◷ &nbsp; Laporan setakat: <strong>' + new Date().toLocaleDateString('ms-MY', options) + '</strong>';
+}
+
+
+// ==========================================
+// 2. FUNGSI PENGURUSAN SOALAN (CRUD)
+// ==========================================
+let editSoalanId = null; 
+
+async function paparSenaraiSoalan() {
+    const tbody = document.getElementById('senaraiSoalanBody');
+    if (!tbody) return;
+
+    const { data, error } = await supabase.from('senarai_soalan').select('*').order('kategori').order('kod_soalan');
+
+    if (error) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Gagal memuatkan data.</td></tr>';
         return;
     }
 
-    // Kira jumlah setiap skor (1 hingga 5)
-    let skorCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    dataSkala.forEach(item => {
-        if(skorCounts[item.skor] !== undefined) {
-            skorCounts[item.skor]++;
-        }
+    tbody.innerHTML = ''; 
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Tiada soalan direkodkan.</td></tr>';
+        return;
+    }
+
+    data.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.kategori}</td>
+            <td><strong>${item.kod_soalan}</strong></td>
+            <td>${item.soalan}</td>
+            <td style="white-space: nowrap;">
+                <button class="action-btn btn-edit" data-id="${item.id}" data-kategori="${item.kategori}" data-kod="${item.kod_soalan}" data-soalan="${item.soalan}" style="background: #ffc107; color: #000;" title="Edit">✏️</button>
+                <button class="action-btn delete btn-padam" data-id="${item.id}" style="background: #dc3545; color: white;" title="Padam">🗑️</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
     });
 
-    // 2. Lukis Graf menggunakan Chart.js
-    const ctx = document.getElementById('skorChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar', // Boleh tukar ke 'pie' atau 'line'
-        data: {
-            labels: ['1 (Lemah)', '2 (Sederhana)', '3 (Memuaskan)', '4 (Baik)', '5 (Cemerlang)'],
-            datasets: [{
-                label: 'Jumlah Undian',
-                data: [skorCounts[1], skorCounts[2], skorCounts[3], skorCounts[4], skorCounts[5]],
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.6)',
-                    'rgba(255, 159, 64, 0.6)',
-                    'rgba(255, 205, 86, 0.6)',
-                    'rgba(54, 162, 235, 0.6)',
-                    'rgba(75, 192, 192, 0.6)'
-                ],
-                borderColor: [
-                    'rgb(255, 99, 132)',
-                    'rgb(255, 159, 64)',
-                    'rgb(255, 205, 86)',
-                    'rgb(54, 162, 235)',
-                    'rgb(75, 192, 192)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1 } // Pastikan paksi Y hanya nombor bulat
-                }
+    // Event Listener untuk butang Edit
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const btnElement = e.currentTarget;
+            editSoalanId = btnElement.getAttribute('data-id');
+            
+            document.getElementById('kategoriBaru').value = btnElement.getAttribute('data-kategori');
+            document.getElementById('kodBaru').value = btnElement.getAttribute('data-kod');
+            document.getElementById('soalanBaru').value = btnElement.getAttribute('data-soalan');
+            
+            const submitBtn = document.getElementById('btnSubmitSoalan');
+            submitBtn.textContent = "Kemaskini";
+            submitBtn.style.background = "#ffc107";
+            submitBtn.style.color = "#000";
+            
+            document.getElementById('formTambahSoalan').scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+
+    // Event Listener untuk butang Padam
+    document.querySelectorAll('.btn-padam').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            if (confirm("Adakah anda pasti mahu memadam soalan ini?")) {
+                const { error: delErr } = await supabase.from('senarai_soalan').delete().eq('id', id);
+                if (!delErr) paparSenaraiSoalan(); 
             }
-        }
-    });
-
-    // 3. Ambil dan paparkan senarai cadangan
-    const { data: dataCadangan, error: errorCadangan } = await supabase
-        .from('jawapan_cadangan')
-        .select('teks_cadangan');
-        
-    const divCadangan = document.getElementById('senaraiCadangan');
-    divCadangan.innerHTML = ''; // Kosongkan mesej "Memuatkan data..."
-
-    if (errorCadangan || dataCadangan.length === 0) {
-        divCadangan.innerHTML = '<p>Tiada cadangan setakat ini.</p>';
-        return;
-    }
-
-    dataCadangan.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'cadangan-box';
-        div.textContent = item.teks_cadangan;
-        divCadangan.appendChild(div);
+        });
     });
 }
 
-// Jalankan fungsi bila halaman dibuka
-loadDashboardData();
-
-
-// Variable untuk simpan ID soalan jika dalam mode Edit
-let editSoalanId = null; 
-
+// Tambah / Kemaskini Soalan
 const formTambah = document.getElementById('formTambahSoalan');
 if (formTambah) {
     formTambah.addEventListener('submit', async (e) => {
@@ -96,231 +103,108 @@ if (formTambah) {
         const kategori = document.getElementById('kategoriBaru').value;
         const kod = document.getElementById('kodBaru').value;
         const soalan = document.getElementById('soalanBaru').value;
-        const submitBtnAdmin = document.querySelector('#formTambahSoalan button[type="submit"]');
+        const submitBtn = document.getElementById('btnSubmitSoalan');
 
         if (editSoalanId) {
-            // JIKA MODE EDIT: Buat UPDATE ke database
-            const { error } = await supabase
-                .from('senarai_soalan')
-                .update({ kategori: kategori, kod_soalan: kod, soalan: soalan })
-                .eq('id', editSoalanId);
-
-            if (error) {
-                alert("Ralat mengemaskini soalan!");
-                console.error(error);
-            } else {
-                alert("Soalan berjaya dikemaskini!");
-                editSoalanId = null; // Reset kembali ke mode Tambah
-                submitBtnAdmin.textContent = "Tambah Soalan"; // Kembalikan teks butang
-                submitBtnAdmin.style.background = "#007bff"; // Kembalikan warna biru
-                submitBtnAdmin.style.color = "white";
+            const { error } = await supabase.from('senarai_soalan').update({ kategori, kod_soalan: kod, soalan }).eq('id', editSoalanId);
+            if (!error) {
+                alert("Berjaya dikemaskini!");
+                editSoalanId = null;
+                submitBtn.textContent = "Simpan"; 
+                submitBtn.style.background = "linear-gradient(135deg, #2187ff, #075fd1)";
+                submitBtn.style.color = "white";
                 formTambah.reset();
                 paparSenaraiSoalan();
             }
         } else {
-            // JIKA MODE TAMBAH: Buat INSERT macam biasa
-            const { error } = await supabase
-                .from('senarai_soalan')
-                .insert([{ kategori: kategori, kod_soalan: kod, soalan: soalan }]);
-
-            if (error) {
-                alert("Ralat menambah soalan!");
-                console.error(error);
-            } else {
-                alert("Soalan berjaya ditambah!");
+            const { error } = await supabase.from('senarai_soalan').insert([{ kategori, kod_soalan: kod, soalan }]);
+            if (!error) {
+                alert("Berjaya ditambah!");
                 formTambah.reset();
                 paparSenaraiSoalan();
             }
         }
     });
 }
-// --- FUNGSI UNTUK PAPAR, EDIT & PADAM SOALAN ---
-async function paparSenaraiSoalan() {
-    const tbody = document.getElementById('senaraiSoalanBody');
-    if (!tbody) return;
 
-    // Tarik data dari database
-    const { data, error } = await supabase
-        .from('senarai_soalan')
-        .select('*')
-        .order('kategori')
-        .order('kod_soalan');
 
-    if (error) {
-        console.error("Ralat ambil soalan:", error);
-        tbody.innerHTML = '<tr><td colspan="4" style="padding:10px; text-align:center;">Gagal memuatkan data.</td></tr>';
-        return;
-    }
-
-    tbody.innerHTML = ''; 
-
-    if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="padding:10px; text-align:center;">Tiada soalan direkodkan.</td></tr>';
-        return;
-    }
-
-    // Bina baris jadual untuk setiap soalan beserta ikon Edit dan Delete
-    data.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td style="padding: 8px; border: 1px solid #ddd;">${item.kategori}</td>
-            <td style="padding: 8px; border: 1px solid #ddd;">${item.kod_soalan}</td>
-            <td style="padding: 8px; border: 1px solid #ddd;">${item.soalan}</td>
-            <td style="padding: 8px; border: 1px solid #ddd; text-align: center; white-space: nowrap;">
-                <button class="btn-edit" data-id="${item.id}" data-kategori="${item.kategori}" data-kod="${item.kod_soalan}" data-soalan="${item.soalan}" style="background: #ffc107; color: #000; border: none; padding: 6px 10px; cursor: pointer; border-radius: 4px; margin-right: 5px;" title="Edit Soalan">✏️</button>
-                <button class="btn-padam" data-id="${item.id}" style="background: #dc3545; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 4px;" title="Padam Soalan">🗑️</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-
-   // Fungsi Click pada butang Edit (Pensel)
-    document.querySelectorAll('.btn-edit').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const btnElement = e.currentTarget;
-            
-            // 1. Ambil data dari jadual
-            const id = btnElement.getAttribute('data-id');
-            const kategori = btnElement.getAttribute('data-kategori');
-            const kod = btnElement.getAttribute('data-kod');
-            const soalan = btnElement.getAttribute('data-soalan');
-            
-            // 2. Masukkan data ke dalam borang di atas
-            document.getElementById('kategoriBaru').value = kategori;
-            document.getElementById('kodBaru').value = kod;
-            document.getElementById('soalanBaru').value = soalan;
-            
-            // 3. Setkan ID ini sebagai soalan yang sedang diedit
-            editSoalanId = id;
-            
-            // 4. Tukar rupa butang submit
-            const submitBtn = document.querySelector('#formTambahSoalan button[type="submit"]');
-            submitBtn.textContent = "Kemaskini Soalan";
-            submitBtn.style.background = "#ffc107"; // Tukar warna amaran (Kuning)
-            submitBtn.style.color = "#000";
-            
-            // 5. Scroll skrin ke arah borang secara automatik
-            document.getElementById('formTambahSoalan').scrollIntoView({ behavior: 'smooth' });
-        });
-    });
-
-    // Fungsi Click pada butang Padam (Tong Sampah)
-    document.querySelectorAll('.btn-padam').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            const id = e.currentTarget.getAttribute('data-id');
-            if (confirm("Adakah anda pasti mahu memadam soalan ini?")) {
-                const { error: delErr } = await supabase.from('senarai_soalan').delete().eq('id', id);
-                if (delErr) {
-                    alert("Ralat memadam soalan.");
-                    console.error(delErr);
-                } else {
-                    alert("Soalan berjaya dipadam!");
-                    paparSenaraiSoalan(); 
-                }
-            }
-        });
-    });
-}
-
-// Panggil fungsi ini supaya jadual dimuatkan terus bila admin buka page
-paparSenaraiSoalan();
 // ==========================================
-// --- FUNGSI PENGURUSAN PENGAJAR (BARU) ---
+// 3. FUNGSI PENGURUSAN PENGAJAR
 // ==========================================
-
-// 1. Tarik senarai Jabatan untuk Dropdown
 async function muatDropdownJabatanAdmin() {
     const selectJabatan = document.getElementById('jabatanPengajarBaru');
     if (!selectJabatan) return;
 
     const { data, error } = await supabase.from('jabatan').select('*').order('nama');
-    if (error) {
-        console.error("Ralat muat jabatan:", error);
-        return;
+    if (!error) {
+        selectJabatan.innerHTML = '<option value="">-- Pilih Bahagian --</option>';
+        data.forEach(j => { selectJabatan.innerHTML += `<option value="${j.id}">${j.nama}</option>`; });
     }
-
-    selectJabatan.innerHTML = '<option value="">-- Sila Pilih Bahagian/Jabatan --</option>';
-    data.forEach(j => {
-        selectJabatan.innerHTML += `<option value="${j.id}">${j.nama}</option>`;
-    });
 }
 
-// 2. Papar Senarai Pengajar dalam Jadual
 async function paparSenaraiPengajar() {
     const tbody = document.getElementById('senaraiPengajarBody');
     if (!tbody) return;
 
-    // Tarik data Jabatan & Pengajar sekaligus supaya kita boleh padankan ID
     const { data: dataJabatan } = await supabase.from('jabatan').select('*');
     const { data: dataPengajar, error } = await supabase.from('pengajar').select('*').order('jabatan_id');
 
     if (error) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Gagal memuatkan data.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Gagal memuatkan data.</td></tr>';
         return;
     }
 
     tbody.innerHTML = '';
     if (dataPengajar.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Tiada rekod pengajar.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Tiada rekod pengajar.</td></tr>';
         return;
     }
 
     dataPengajar.forEach(pengajar => {
-        // Cari nama jabatan berdasarkan ID
         const jabatan = dataJabatan.find(j => j.id === pengajar.jabatan_id);
         const namaJabatan = jabatan ? jabatan.nama : 'Tiada Jabatan';
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td style="padding: 8px; border: 1px solid #ddd;">${namaJabatan}</td>
-            <td style="padding: 8px; border: 1px solid #ddd;">${pengajar.nama}</td>
-            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
-                <button class="btn-padam-pengajar" data-id="${pengajar.id}" style="background: #dc3545; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;" title="Padam Pengajar">🗑️</button>
+            <td>${namaJabatan}</td>
+            <td><strong>${pengajar.nama}</strong></td>
+            <td style="text-align: left;">
+                <button class="action-btn delete btn-padam-pengajar" data-id="${pengajar.id}" style="background: #dc3545; color: white;" title="Padam">🗑️</button>
             </td>
         `;
         tbody.appendChild(tr);
     });
 
-    // Fungsi klik Padam Pengajar
     document.querySelectorAll('.btn-padam-pengajar').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             const id = e.currentTarget.getAttribute('data-id');
             if (confirm("Padam nama pengajar ini?")) {
                 const { error: delErr } = await supabase.from('pengajar').delete().eq('id', id);
-                if (delErr) alert("Ralat memadam pengajar.");
-                else {
-                    alert("Pengajar berjaya dipadam!");
-                    paparSenaraiPengajar();
-                }
+                if (!delErr) paparSenaraiPengajar();
             }
         });
     });
 }
 
-// 3. Logik Tambah Pengajar Baharu
 const formPengajar = document.getElementById('formTambahPengajar');
 if (formPengajar) {
     formPengajar.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const jabatanId = document.getElementById('jabatanPengajarBaru').value;
+        const jabatan_id = document.getElementById('jabatanPengajarBaru').value;
         const nama = document.getElementById('namaPengajarBaru').value;
 
-        const { error } = await supabase.from('pengajar').insert([{ 
-            jabatan_id: jabatanId, 
-            nama: nama 
-        }]);
-
-        if (error) {
-            alert("Ralat menambah pengajar!");
-            console.error(error);
-        } else {
+        const { error } = await supabase.from('pengajar').insert([{ jabatan_id, nama }]);
+        if (!error) {
             alert("Pengajar berjaya ditambah!");
             formPengajar.reset();
             paparSenaraiPengajar();
+        } else {
+            alert("Ralat menambah pengajar!");
         }
     });
 }
 
-// Panggil fungsi secara automatik bila page dibuka
+// Panggil fungsi secara automatik bila page dimuatkan
+paparSenaraiSoalan();
 muatDropdownJabatanAdmin();
 paparSenaraiPengajar();
