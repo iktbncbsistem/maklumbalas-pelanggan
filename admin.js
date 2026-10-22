@@ -105,6 +105,7 @@ if (formTambah) {
         } else {
             alert("Soalan berjaya ditambah!");
             formTambah.reset(); // Kosongkan borang
+            paparSenaraiSoalan();
         }
     });
 }
