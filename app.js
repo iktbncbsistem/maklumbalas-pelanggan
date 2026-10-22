@@ -135,14 +135,15 @@ form.addEventListener('submit', async (e) => {
         const randomNum = Math.floor(100000 + Math.random() * 900000);
         const noTiket = `TKT-${randomNum}`;
 
-        // A. Masukkan data ke jadual tiket_maklumbalas
+       // A. Masukkan data ke jadual tiket_maklumbalas
         const { data: tiketData, error: tiketError } = await supabase
             .from('tiket_maklumbalas')
             .insert([{ 
                 no_tiket: noTiket, 
                 email_pelajar: email, 
                 jabatan_id: jabatanId, 
-                pengajar_id: pengajarId 
+                pengajar_id: pengajarId,
+                subjek: subjekTeks // <--- TAMBAH INI SUPAYA MASUK DATABASE
             }])
             .select();
         
