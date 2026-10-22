@@ -180,24 +180,24 @@ tbody tr:nth-child(even){background:#f8fafd}tbody tr:hover{background:#eef6ff}
       </article>
 
       <!-- PENGURUSAN PENGAJAR -->
+      <!-- PENGURUSAN BAHAGIAN / JABATAN -->
       <article class="panel">
         <div class="panel-head">
-            <h3 class="panel-title" style="color:#087653"><span class="title-icon" style="background:#e4f8ee;color:#079669">♟</span> Pengurusan Senarai Pengajar</h3>
+            <h3 class="panel-title" style="color:#e97813"><span class="title-icon" style="background:#fff0df;color:#e97813">🏢</span> Pengurusan Bahagian / Jabatan</h3>
         </div>
-        <div class="form-box green-box">
-          <form id="formTambahPengajar">
-            <div class="form-grid" style="grid-template-columns:1fr 1.2fr auto">
-              <div class="field"><label>Bahagian / Jabatan</label><select id="jabatanPengajarBaru" required><option value="">Memuatkan data...</option></select></div>
-              <div class="field"><label>Nama Pengajar</label><input type="text" id="namaPengajarBaru" required placeholder="Cth: En. Ahmad"></div>
-              <div class="field"><label>&nbsp;</label><button class="btn btn-green" type="submit">Simpan</button></div>
+        <div class="form-box" style="border-color:#ffe4cc;background:linear-gradient(120deg,#fffaf0,#fffdf9)">
+          <form id="formTambahJabatan">
+            <div class="form-grid" style="grid-template-columns:1fr auto">
+              <div class="field"><label>Nama Bahagian / Jabatan</label><input type="text" id="namaJabatanBaru" required placeholder="Cth: Jabatan Mekanikal"></div>
+              <div class="field"><label>&nbsp;</label><button class="btn" style="background:linear-gradient(135deg,#f97316,#ea580c);color:white" type="submit">Simpan</button></div>
             </div>
           </form>
         </div>
-        <div class="table-tools"><h3>Senarai Pengajar Semasa</h3></div>
-        <div class="table-scroll green-table">
+        <div class="table-tools"><h3>Senarai Bahagian / Jabatan</h3></div>
+        <div class="table-scroll" style="border-color:#ffe4cc">
             <table>
-                <thead><tr><th>Bahagian / Jabatan</th><th>Nama Pengajar</th><th>Tindakan</th></tr></thead>
-                <tbody id="senaraiPengajarBody"><tr><td colspan="3" class="empty-state">Memuatkan data...</td></tr></tbody>
+                <thead style="background:linear-gradient(100deg,#c25a0a,#ea580c)"><tr><th>Nama Bahagian / Jabatan</th><th>Tindakan</th></tr></thead>
+                <tbody id="senaraiJabatanBody"><tr><td colspan="2" class="empty-state">Memuatkan data...</td></tr></tbody>
             </table>
         </div>
       </article>
